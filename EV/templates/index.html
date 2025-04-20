@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>EV Battery Health and Charging Time Estimator</title>
+    <link rel="stylesheet"
+          href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body style="background-color: #f0f4f7; padding: 20px;">
+
+    <div class="container">
+        <h2 class="text-center mb-4"> Battery Health and Charging Estimator</h2>
+        <div class="row">
+
+            <!-- Battery Degradation Form -->
+            <div class="col-md-6">
+                <div class="card p-3">
+                    <h4 class="mb-3"> Degradation Rate</h4>
+                    <form action="/predict_degradation" method="POST" id="degradation-form">
+                        <input type="number" step="any" min="0" name="soc" value="{{ form_data_degradation['soc'] if form_data_degradation else '' }}" placeholder="SOC (%)" class="form-control mb-2" required>
+                        <input type="number" step="any" min="0" name="current" value="{{ form_data_degradation['current'] if form_data_degradation else '' }}" placeholder="Current (A)" class="form-control mb-2" required>
+                        <input type="number" step="any" min="0" name="voltage" value="{{ form_data_degradation['voltage'] if form_data_degradation else '' }}" placeholder="Voltage (V)" class="form-control mb-2" required>
+                        <input type="number" step="any" min="0" name="battery temp" value="{{ form_data_degradation['battery temp'] if form_data_degradation else '' }}" placeholder="Battery Temp (°C)" class="form-control mb-2" required>
+                        <input type="number" step="any" min="0" name="ambient temp" value="{{ form_data_degradation['ambient temp'] if form_data_degradation else '' }}" placeholder="Ambient Temp (°C)" class="form-control mb-2" required>
+                        <input type="number" min="0" name="charging cycles" value="{{ form_data_degradation['charging cycles'] if form_data_degradation else '' }}" placeholder="Charging Cycles" class="form-control mb-2" required>
+                        <select name="battery type encoded" class="form-control mb-2" required>
+                            <option value="">Select Battery Type</option>
+                            <option value="0" {% if form_data_degradation and form_data_degradation['battery type encoded'] == '0' %}selected{% endif %}>Li-ion</option>
+                            <option value="1" {% if form_data_degradation and form_data_degradation['battery type encoded'] == '1' %}selected{% endif %}>LiFePO₄</option>
+                        </select>
+                        <button type="submit" class="btn btn-primary btn-block">Degradation Rate</button>
+                    </form>
+                    {% if result_degradation %}
+                        <div class="alert alert-info mt-3" id="result_degradation">{{ result_degradation }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Charging Time Form -->
+            <div class="col-md-6">
+                <div class="card p-3">
+                    <h4 class="mb-3"> Charging Time</h4>
+                    <form action="/predict_charging" method="POST" id="charging-form">
+                        <input type="number" step="any" min="0" name="soc" value="{{ form_data_charging['soc'] if form_data_charging else '' }}" placeholder="SOC (%)" class="form-control mb-2" required>
+                        <input type="number" step="any" min="0" name="voltage" value="{{ form_data_charging['voltage'] if form_data_charging else '' }}" placeholder="Voltage (V)" class="form-control mb-2" required>
+                        <input type="number" step="any" min="0" name="current" value="{{ form_data_charging['current'] if form_data_charging else '' }}" placeholder="Current (A)" class="form-control mb-2" required>
+                        <input type="number" step="any" min="0" name="battery temp" value="{{ form_data_charging['battery temp'] if form_data_charging else '' }}" placeholder="Battery Temp (°C)" class="form-control mb-2" required>
+                        <input type="number" step="any" min="0" name="ambient temp" value="{{ form_data_charging['ambient temp'] if form_data_charging else '' }}" placeholder="Ambient Temp (°C)" class="form-control mb-2" required>
+                        <select name="battery type" class="form-control mb-2" required>
+                            <option value="">Select Battery Type</option>
+                            <option value="0" {% if form_data_charging and form_data_charging['battery type'] == '0' %}selected{% endif %}>Li-ion</option>
+                            <option value="1" {% if form_data_charging and form_data_charging['battery type'] == '1' %}selected{% endif %}>LiFePO₄</option>
+                        </select>
+                        <input type="number" step="any" min="0" name="degradation rate" value="{{ form_data_charging['degradation rate'] if form_data_charging else '' }}" placeholder="Degradation Rate (%)" class="form-control mb-2" required>
+                        <button type="submit" class="btn btn-success btn-block"> Charging Time</button>
+                    </form>
+                    {% if result_charging %}
+                        <div class="alert alert-info mt-3" id="result_charging">{{ result_charging }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Clear Button -->
+        <button type="button" class="btn btn-danger btn-block" onclick="clearAll()">Clear</button>
+
+    </div>
+
+    <script>
+        // Function to clear all form fields and output (result)
+        function clearAll() {
+            // Clear form fields
+            document.getElementById("degradation-form").reset();
+            document.getElementById("charging-form").reset();
+
+            // Clear result messages
+            var resultDegradation = document.getElementById('result_degradation');
+            var resultCharging = document.getElementById('result_charging');
+
+            if (resultDegradation) {
+                resultDegradation.style.display = 'none';  // Hide the degradation result message
+            }
+
+            if (resultCharging) {
+                resultCharging.style.display = 'none';  // Hide the charging time result message
+            }
+        }
+    </script>
+
+</body>
+</html>
